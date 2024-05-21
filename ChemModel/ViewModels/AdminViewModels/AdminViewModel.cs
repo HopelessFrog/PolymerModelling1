@@ -22,6 +22,10 @@ namespace ChemModel.ViewModels
     public partial class AdminViewModel : ObservableObject, ICloseWindow.ICloseWindows
     {
         [ObservableProperty]
+        private bool recoverState;
+        [ObservableProperty]
+        private bool copyState;
+        [ObservableProperty]
         private string mem = "";
 
         private DispatcherTimer timer;
@@ -37,9 +41,11 @@ namespace ChemModel.ViewModels
             timer.Start();
         }
         [RelayCommand]
-        private void Copy()
+        private async void Copy()
         {
-            if(DBConfig.Destination == @"qwe.db")
+            await Task.Run(() => CopyChange());
+
+            if (DBConfig.Destination == @"qwe.db")
                  File.Copy(DBConfig.Destination, "qweS.db", true);
             else
             {
@@ -49,9 +55,25 @@ namespace ChemModel.ViewModels
 
         }
 
-        [RelayCommand]
-        private void Recover()
+        private async Task RecoverChange()
         {
+            RecoverState = true;
+            Thread.Sleep(2000);
+            RecoverState = false;
+
+        }
+        private async Task CopyChange()
+        {
+            CopyState = true;
+            Thread.Sleep(2000);
+            CopyState = false;
+
+        }
+
+        [RelayCommand]
+        private async void Recover()
+        {
+            await Task.Run(() => RecoverChange());
             if (DBConfig.Destination == @"qwe.db")
                 DBConfig.Destination = @"qweS.db";
             else

@@ -33,6 +33,8 @@ namespace ChemModel.ViewModels
 
         public void Receive(SolveParamsMessage message)
         {
+            WeakReferenceMessenger.Default.Unregister<SolveParamsMessage>(this);
+
             Time = message.Value.Miliseconds.ToString() + " мс";
             Operations = message.Value.Operations;
 

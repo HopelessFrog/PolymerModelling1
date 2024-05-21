@@ -176,7 +176,9 @@ namespace ChemModel.ViewModels
                 mathOperCount += 36;
             }
             stopwatch.Stop();
-            long miliseconds = stopwatch.ElapsedTicks;
+            long miliseconds = stopwatch.ElapsedMilliseconds;
+            if (miliseconds == 0)
+                miliseconds++;
             var resultWindow = new ResultsWindow();
             WeakReferenceMessenger.Default.Send(new DataMessage(data));
             WeakReferenceMessenger.Default.Send(new SolveParamsMessage(new SolveParams() { Miliseconds = miliseconds, Operations = mathOperCount }));

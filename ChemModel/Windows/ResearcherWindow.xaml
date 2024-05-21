@@ -38,10 +38,11 @@
                 </Viewbox>
             </Grid>
             <DockPanel Grid.Column="0" Margin="5,5,5,5">
+                <Viewbox>
 
                 <ComboBox
                     materialDesign:HintAssist.Hint="Материал"
-                    Style="{StaticResource MaterialDesignOutlinedComboBox}" Margin="20" HorizontalAlignment="Stretch"
+                    Style="{StaticResource MaterialDesignOutlinedComboBox}" HorizontalAlignment="Stretch"
                     VerticalContentAlignment="Center" VerticalAlignment="Stretch" Name="matCombo"
                     ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial}">
                     <ComboBox.ItemTemplate>
@@ -50,6 +51,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+                </Viewbox>
             </DockPanel>
             <Viewbox VerticalAlignment="Top" Grid.RowSpan="3" Grid.ColumnSpan="1" Grid.Column="0" Grid.Row="1">
                 <GroupBox VerticalAlignment="Stretch" MinHeight="300" MinWidth="250" Margin="5,5,5,5"
