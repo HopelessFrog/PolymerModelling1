@@ -107,11 +107,11 @@ namespace ChemModel.ViewModels
             ctx.SaveChanges();
             if (dbRole == "admin")
             {
-                Admins.Add(new User() { Id = addUser.Id, Name = addUser.Name, Password = addUser.Password });
+                Admins.Add(addUser);
             }
             if (dbRole == "user")
             {
-                Researchers.Add(new User() { Id = addUser.Id, Name = addUser.Name, Password = addUser.Password });
+                Researchers.Add(addUser);
             }
         }
 

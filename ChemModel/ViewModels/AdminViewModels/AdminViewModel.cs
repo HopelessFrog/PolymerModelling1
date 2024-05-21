@@ -28,6 +28,8 @@ namespace ChemModel.ViewModels
         [ObservableProperty]
         private string mem = "";
 
+        [ObservableProperty] private string lastSave;
+
         private DispatcherTimer timer;
         public AdminViewModel()
         {
@@ -46,13 +48,21 @@ namespace ChemModel.ViewModels
             await Task.Run(() => CopyChange());
 
             if (DBConfig.Destination == @"qwe.db")
-                 File.Copy(DBConfig.Destination, "qweS.db", true);
+            {
+              
+                File.Copy(DBConfig.Destination, "qweS.db", true);
+
+            }
             else
             {
+               
                 File.Copy(DBConfig.Destination, "qwe.db", true);
 
             }
 
+            DBConfig.LastSave = DateTime.Now.ToString();
+           
+            DBConfig.RealSave = true;
         }
 
         private async Task RecoverChange()
@@ -74,15 +84,27 @@ namespace ChemModel.ViewModels
         private async void Recover()
         {
             await Task.Run(() => RecoverChange());
+
+            if (!DBConfig.RealSave)
+                return;
+
+            await Task.Run(() => RecoverChange());
             if (DBConfig.Destination == @"qwe.db")
+            {
                 DBConfig.Destination = @"qweS.db";
+              
+
+            }
             else
             {
                 DBConfig.Destination = @"qwe.db";
+              
 
 
             }
             WeakReferenceMessenger.Default.Send(new ChangeDbMEssage(new ()));
+            DBConfig.RealSave = false;
+
 
 
         }
