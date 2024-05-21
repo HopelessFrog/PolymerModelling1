@@ -1,7 +1,9 @@
 ﻿using ChemModel.Data;
 using ChemModel.Data.DbTables;
+using ChemModel.Messeges;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +11,7 @@ using System.Windows;
 
 namespace ChemModel.ViewModels
 {
-    public partial class PropertiesTabViewModel : ObservableObject
+    public partial class PropertiesTabViewModel : ObservableObject, IRecipient<ChangeDbMEssage>
     {
         Context ctx = new Context();
         [ObservableProperty]
@@ -36,6 +38,8 @@ namespace ChemModel.ViewModels
             {
                 SelectedProp = Props[0];
             }
+            WeakReferenceMessenger.Default.Register<ChangeDbMEssage>(this);
+
         }
 
         private bool CanAddProp() =>
@@ -75,6 +79,8 @@ namespace ChemModel.ViewModels
             NewPropName = "";
             NewPropChars = "";
             NewPropUnit = null;
+            WeakReferenceMessenger.Default.Send(new NewPropMessage(new NewUser()));
+
         }
         private bool CanDelete() =>
             SelectedProp is not null;
@@ -88,11 +94,21 @@ namespace ChemModel.ViewModels
             ctx.Properties.Remove(prop!);
             ctx.SaveChanges();
             Props.Remove(prop!);
-           
+            WeakReferenceMessenger.Default.Send(new NewPropMessage(new NewUser()));
+
+
         }
         public void GetLatestUnits()
         {
             Units = new ObservableCollection<Unit>(ctx.Units.ToList());
+        }
+
+        public void Receive(ChangeDbMEssage message)
+        {
+            ctx = new Context();
+
+            Units = new ObservableCollection<Unit>(ctx.Units.ToList());
+            Props = new ObservableCollection<Property>(ctx.Properties.ToList());
         }
     }
 }

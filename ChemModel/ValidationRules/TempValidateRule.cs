@@ -1,30 +1,27 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
-using ChemModel.Errors;
 
 namespace ChemModel.ValidationRules
 {
-    public class ValidateMoreThanZero : ValidationRule
+    public class TempValidateRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-          
             var stringValue = GetBoundValue(value) as string;
             if (string.IsNullOrEmpty(stringValue))
             {
-              
-
                 return new ValidationResult(false, "Введите значение");
             }
-            if (!double.TryParse(stringValue, out double res) || res <= 0)
+            if (!double.TryParse(stringValue, out double res) || res <= -273)
             {
-               
-
-                return new ValidationResult(false, "Некорректное значение");
+                return new ValidationResult(false, "Температура должна быть больше - 273\u00b0C");
             }
-               
             return new ValidationResult(true, null);
         }
 

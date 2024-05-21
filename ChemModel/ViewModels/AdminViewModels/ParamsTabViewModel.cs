@@ -1,7 +1,10 @@
 ﻿using ChemModel.Data;
 using ChemModel.Data.DbTables;
+using ChemModel.Messeges;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +12,7 @@ using System.Windows;
 
 namespace ChemModel.ViewModels
 {
-    public partial class ParamsTabViewModel : ObservableObject
+    public partial class ParamsTabViewModel : ObservableObject, IRecipient<ChangeDbMEssage>
     {
         Context ctx = new Context();
         [ObservableProperty]
@@ -36,6 +39,8 @@ namespace ChemModel.ViewModels
             {
                 SelectedParam = Parameters[0];
             }
+            WeakReferenceMessenger.Default.Register<ChangeDbMEssage>(this);
+
         }
 
         private bool CanAddParam() =>
@@ -43,6 +48,7 @@ namespace ChemModel.ViewModels
         [RelayCommand(CanExecute = nameof(CanAddParam))]
         private void AddParam()
         {
+
             var allProps = ctx.Properties.ToList();
             var allParams = ctx.Properties.ToList();
             if (allProps.FirstOrDefault(x => x.Name == NewParamName || x.Chars == NewParamChars) is not null || allParams.FirstOrDefault(x => x.Name == NewParamName || x.Chars == NewParamChars) is not null)
@@ -75,8 +81,10 @@ namespace ChemModel.ViewModels
             NewParamChars = "";
             NewParamName = "";
             NewParamUnit = null;
+            WeakReferenceMessenger.Default.Send(new NewPropMessage(new NewUser()));
+
         }
-        
+
         [RelayCommand]
         private void DeleteParam(EmpiricCoefficient param)
         {
@@ -88,10 +96,20 @@ namespace ChemModel.ViewModels
             ctx.SaveChanges();
             Parameters.Remove(param!);
             SelectedParam = null;
+            WeakReferenceMessenger.Default.Send(new NewPropMessage(new NewUser() ));
+
         }
         public void GetLatestUnits()
         {
             Units = new ObservableCollection<Unit>(ctx.Units.ToList());
+        }
+
+        public void Receive(ChangeDbMEssage message)
+        {
+            ctx = new Context();
+
+            Units = new ObservableCollection<Unit>(ctx.Units.ToList());
+            Parameters = new ObservableCollection<EmpiricCoefficient>(ctx.EmpiricCoefficients.ToList());
         }
     }
 }

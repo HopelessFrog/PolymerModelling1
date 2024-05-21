@@ -19,7 +19,7 @@ using System.Windows.Threading;
 
 namespace ChemModel.ViewModels
 {
-    public partial class AdminViewModel : ObservableObject
+    public partial class AdminViewModel : ObservableObject, ICloseWindow.ICloseWindows
     {
         [ObservableProperty]
         private string mem = "";
@@ -39,16 +39,43 @@ namespace ChemModel.ViewModels
         [RelayCommand]
         private void Copy()
         {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.FileName = "База данных";
-            dlg.DefaultExt = ".db";
-            dlg.Filter = "База данных (.db)|*.db";
-            bool? result = dlg.ShowDialog();
-            if (result == true)
+            if(DBConfig.Destination == @"qwe.db")
+                 File.Copy(DBConfig.Destination, "qweS.db", true);
+            else
             {
-                File.Copy(DBConfig.Destination, dlg.FileName);
-                MessageBox.Show("Сохранение прошло успешно", "Сохранение завершено", MessageBoxButton.OK, MessageBoxImage.Information);
+                File.Copy(DBConfig.Destination, "qwe.db", true);
+
             }
+
+        }
+
+        [RelayCommand]
+        private void Recover()
+        {
+            if (DBConfig.Destination == @"qwe.db")
+                DBConfig.Destination = @"qweS.db";
+            else
+            {
+                DBConfig.Destination = @"qwe.db";
+
+
+            }
+            WeakReferenceMessenger.Default.Send(new ChangeDbMEssage(new ()));
+
+
+        }
+        [RelayCommand]
+        private void Logout()
+        {
+            var window = new AuthWindow();
+            window.Show();
+            Close.Invoke();
+        }
+
+        public Action Close { get; set; }
+        public bool CanClose()
+        {
+            return true;
         }
     }
 }

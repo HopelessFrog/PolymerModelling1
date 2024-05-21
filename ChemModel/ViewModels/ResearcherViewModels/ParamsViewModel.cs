@@ -1,5 +1,6 @@
 ﻿using ChemModel.Data;
 using ChemModel.Data.DbTables;
+using ChemModel.Errors;
 using ChemModel.Messeges;
 using ChemModel.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,19 +10,25 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ChemModel.ViewModels
 {
-    public partial class ParamsViewModel : ObservableObject
+    public partial class ParamsViewModel : ObservableObject, ICloseWindow.ICloseWindows
     {
+        public List<TextBox> TList { get; set; }
+        [ObservableProperty] 
+        private bool ready = true;
         private const double R = 8.31;
         [ObservableProperty]
         private ObservableCollection<Material> materials;
@@ -46,10 +53,11 @@ namespace ChemModel.ViewModels
         [ObservableProperty]
         private double step = 0.1;
         [ObservableProperty]
+        
         private ObservableCollection<MaterialEmpiricBind>? coefs;
         [ObservableProperty]
         private ObservableCollection<MaterialPropertyBind>? properties;
-        public ParamsViewModel() 
+        public  ParamsViewModel()
         {
             using var ctx = new Context();
             Materials = new ObservableCollection<Material>(ctx.Materials.ToList());
@@ -58,6 +66,13 @@ namespace ChemModel.ViewModels
                 SelectedMaterial = Materials[0];
             }
         }
+      
+
+        public event EventHandler PropChanged;
+
+       
+       
+
         public void MaterialSelected()
         {
             if (SelectedMaterial is null)
@@ -66,14 +81,40 @@ namespace ChemModel.ViewModels
             Properties = new ObservableCollection<MaterialPropertyBind>(ctx.MaterialPropertyBinds.Where(x => x.MaterialId == SelectedMaterial.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
             Coefs = new ObservableCollection<MaterialEmpiricBind>(ctx.MaterialEmpiricBinds.Where(x => x.MaterialId == SelectedMaterial.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
         }
+        [RelayCommand]
+        private void Logout()
+        {
+            var window = new AuthWindow();
+            window.Show();
+            Close.Invoke();
+        }
+        private  List<TextBox> GetAllTextBoxes(DependencyObject depObj)
+        {
+            var textBoxes = new List<TextBox>();
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is TextBox)
+                {
+                    textBoxes.Add(child as TextBox);
+                }
+                else if (child is DependencyObject)
+                {
+                    textBoxes.AddRange(GetAllTextBoxes(child));
+                }
+            }
+            return textBoxes;
+        }
         private bool CanSolve() =>
             SelectedMaterial is not null && Width > 0 && Length > 0 && Height > 0 && Velocity > 0 && Step > 0;
         [RelayCommand(CanExecute = nameof(CanSolve))]
         private void Solve(Window window)
         {
-            if (!Validator.IsValid(window))
+            var t = GetAllTextBoxes(window);
+            var hasError = t.Any(textbox => Validation.GetErrors(textbox).Count > 0);
+            if (!Validator.IsValid(window) || hasError)
             {
-                MessageBox.Show("Устраните все ошибки ввода перед моделированием", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Исправте неккоректные значения пред  моделированием", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             Stopwatch stopwatch = new Stopwatch();
@@ -135,7 +176,7 @@ namespace ChemModel.ViewModels
                 mathOperCount += 36;
             }
             stopwatch.Stop();
-            long miliseconds = stopwatch.ElapsedMilliseconds;
+            long miliseconds = stopwatch.ElapsedTicks;
             var resultWindow = new ResultsWindow();
             WeakReferenceMessenger.Default.Send(new DataMessage(data));
             WeakReferenceMessenger.Default.Send(new SolveParamsMessage(new SolveParams() { Miliseconds = miliseconds, Operations = mathOperCount }));
@@ -153,6 +194,12 @@ namespace ChemModel.ViewModels
                 TempCr = Temperature,
             }));
             resultWindow.ShowDialog();
+        }
+
+        public Action Close { get; set; }
+        public bool CanClose()
+        {
+            return true;
         }
     }
 }

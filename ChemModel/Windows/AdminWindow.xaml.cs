@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static ChemModel.ViewModels.ICloseWindow;
 
 namespace ChemModel.Windows
 {
@@ -28,8 +29,8 @@ namespace ChemModel.Windows
             InitializeComponent();
          
             matGrid.AutoGeneratingColumn += AutoGeneratingColumn;
-          
-            
+
+            Loaded += AdminWindow_Loaded;
             DataContext = new ViewModels.AdminViewModel();
             this.Closed += (sender, e) => Owner.Close();
            // users.DataContext = new ViewModels.UsersTabViewModel();
@@ -37,6 +38,18 @@ namespace ChemModel.Windows
             materials.DataContext = matDC;
             matGrid.SelectionChanged += (sender, e) => matDC.PropChange();
         }
+
+        private void AdminWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ICloseWindows viewModel)
+            {
+                viewModel.Close +=
+                    () => { this.Close(); };
+
+                Closing += (s, e) => { e.Cancel = !viewModel.CanClose(); };
+            }
+        }
+
         void AutoGeneratingColumn(object? sender, DataGridAutoGeneratingColumnEventArgs e)
         {
             var desc = e.PropertyDescriptor as PropertyDescriptor;

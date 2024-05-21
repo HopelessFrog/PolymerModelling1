@@ -24,23 +24,44 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.05*" />
+            <RowDefinition Height="0.1*" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <UniformGrid Columns="5" Margin="0">
             <FrameworkElement x:Name="c1" />
         </UniformGrid>
         <Grid  Background="Crimson">
+
             <StackPanel HorizontalAlignment="Right"
                         Orientation="Horizontal">
+                <Viewbox HorizontalAlignment="Right" Margin="10">
+                    <Button 
+                        Background="Crimson"
+                        Command="{Binding LogoutCommand}"
+                        Style="{StaticResource MaterialDesignFloatingActionLightButton}"
+                    >
+                        <materialDesign:PackIcon
+                            Width="35"
+                            Height="35"
+                            Kind="Logout"
+                        />
+                    </Button>
+                </Viewbox>
+
                 <materialDesign:PopupBox
                     IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
                     StaysOpen="True">
-                    <Grid
-                        Width="300"
-                        Margin="8,8,8,8">
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}" materialDesign:ButtonAssist.CornerRadius="10" HorizontalAlignment="Left"
-                                Content="Резервное копирование бд" Margin="15" Command="{Binding CopyCommand}" />
+                    <Grid>
+                        <StackPanel Orientation="Vertical">
+                            <Button Style="{StaticResource MaterialDesignRaisedButton}" materialDesign:ButtonAssist.CornerRadius="10" HorizontalAlignment="Left"
+                                    Content="Резервное копирование бд" Margin="15" Command="{Binding CopyCommand}" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource MaterialDesignRaisedButton}" materialDesign:ButtonAssist.CornerRadius="10" HorizontalAlignment="Left"
+                                        Content="Резервное востановление бд" Margin="15" Command="{Binding RecoverCommand}" />
+                            </StackPanel>
+
+                        </StackPanel>
+                        
 
                     </Grid>
                 </materialDesign:PopupBox>
@@ -91,7 +112,9 @@
                                             <DataTemplate>
                                                 <Viewbox>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBox MinWidth="100"
+                                                        <TextBox 
+                                                            IsReadOnly="True"
+                                                            MinWidth="100"
                                                                  materialDesign:HintAssist.Hint="Login"
                                                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                                                  HorizontalContentAlignment="Center"
@@ -101,10 +124,10 @@
                                                                  Text="{Binding Name}" />
 
                                                         <PasswordBox
+
                                                             Margin="10"
                                                             materialDesign:PasswordBoxAssist.Password="{Binding Path=Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
                                                             materialDesign:HintAssist.Hint="Password"
-                                                            materialDesign:TextFieldAssist.HasClearButton="True"
                                                             IsEnabled="{Binding ElementName=RevealPasswordOutlinedEnabled, Path=IsChecked}"
                                                             Style="{StaticResource MaterialDesignOutlinedRevealPasswordBox}"
                                                             VerticalContentAlignment="Bottom" />

@@ -26,78 +26,10 @@ namespace ChemModel.Windows
         {
             InitializeComponent();
             DataContext = new ResearcherViewModel();
-            var graph = new GraphicsViewModel(temp, vaz);
+            var graph = new GraphicsViewModel();
             graphics.DataContext = graph;
             results.DataContext = new ResultsViewModel();
-            ScottPlot.Plottables.Crosshair? CrosshairTemp = temp.Plot.Add.Crosshair(0, 0);
-            ScottPlot.Plottables.Crosshair? CrooshairVaz = vaz.Plot.Add.Crosshair(0, 0);
-            CrosshairTemp.IsVisible = false;
-            CrooshairVaz.IsVisible = false;
-            temp.MouseMove += (s, e) =>
-            {
-                if (graph.ScatterTemp is null)
-                {
-                    return;
-                }
-                var pos = this.PointToScreen(Mouse.GetPosition(temp));
-                pos.Y -= 25;
-                // determine where the mouse is and get the nearest point
-                Pixel mousePixel = new(pos.X, pos.Y);
-                Coordinates mouseLocation = temp.Plot.GetCoordinates(mousePixel);
-                DataPoint nearest = graph.ScatterTemp.Data.GetNearest(mouseLocation, temp.Plot.LastRender);
-
-                // place the crosshair over the highlighted point
-                if (nearest.IsReal)
-                {
-                    CrosshairTemp.IsVisible = true;
-                    CrosshairTemp.Position = nearest.Coordinates;
-                    temp.Refresh();
-                    graph.NearXTemp = $"{nearest.X:0.##}";
-                    graph.NearYTemp = $"{nearest.Y:0.##}";
-                }
-
-                // hide the crosshair when no point is selected
-                if (!nearest.IsReal && CrosshairTemp.IsVisible)
-                {
-                    CrosshairTemp.IsVisible = false;
-                    temp.Refresh();
-                    graph.NearXTemp = "--";
-                    graph.NearYTemp = "--";
-                }
-            };
-            vaz.MouseMove += (s, e) =>
-            {
-                if (graph.ScatterVaz is null)
-                {
-                    return;
-                }
-                var pos = this.PointToScreen(Mouse.GetPosition(vaz));
-                pos.Y -= 25;
-
-                // determine where the mouse is and get the nearest point
-                Pixel mousePixel = new(pos.X, pos.Y);
-                Coordinates mouseLocation = vaz.Plot.GetCoordinates(mousePixel);
-                DataPoint nearest = graph.ScatterVaz.Data.GetNearest(mouseLocation, vaz.Plot.LastRender);
-
-                // place the crosshair over the highlighted point
-                if (nearest.IsReal)
-                {
-                    CrooshairVaz.IsVisible = true;
-                    CrooshairVaz.Position = nearest.Coordinates;
-                    vaz.Refresh();
-                    graph.NearXVaz = $"{nearest.X:0.##}";
-                    graph.NearYVaz = $"{nearest.Y:0.##}";
-                }
-
-                // hide the crosshair when no point is selected
-                if (!nearest.IsReal && CrooshairVaz.IsVisible)
-                {
-                    CrooshairVaz.IsVisible = false;
-                    vaz.Refresh();
-                    graph.NearXVaz = "--";
-                    graph.NearYVaz = "--";
-                }
-            };
+           
         }
         private static readonly Regex _posReg = new Regex("[^0-9,]+");
         private static readonly Regex _reg = new Regex("[^0-9,-]+");

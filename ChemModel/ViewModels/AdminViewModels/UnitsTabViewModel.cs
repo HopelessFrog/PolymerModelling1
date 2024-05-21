@@ -8,10 +8,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ChemModel.Messeges;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace ChemModel.ViewModels
 {
-    public partial class UnitsTabViewModel : ObservableObject
+    public partial class UnitsTabViewModel : ObservableObject, IRecipient<ChangeDbMEssage>
     {
         [ObservableProperty]
         private ObservableCollection<Unit> units;
@@ -23,7 +25,9 @@ namespace ChemModel.ViewModels
         {
             using Context ctx = new Context();
             Units = new ObservableCollection<Unit>(ctx.Units.ToList());
-           
+            WeakReferenceMessenger.Default.Register<ChangeDbMEssage>(this);
+
+
         }
         public bool CanAdd() => !string.IsNullOrEmpty(NewUnit);
         [RelayCommand(CanExecute = nameof(CanAdd))]
@@ -47,6 +51,12 @@ namespace ChemModel.ViewModels
             ctx.SaveChanges();
             Units.Remove(unit!);
           
+        }
+
+        public void Receive(ChangeDbMEssage message)
+        {
+            using Context ctx = new Context();
+            Units = new ObservableCollection<Unit>(ctx.Units.ToList());
         }
     }
 }

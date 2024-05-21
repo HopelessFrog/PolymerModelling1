@@ -17,7 +17,7 @@ using ChemModel.Windows;
 
 namespace ChemModel.ViewModels
 {
-    public partial class UsersTabViewModel : ObservableObject, IRecipient<NewUserMessage>
+    public partial class UsersTabViewModel : ObservableObject, IRecipient<NewUserMessage>, IRecipient<ChangeDbMEssage>
     {
         private readonly Dictionary<string, string> roles = new Dictionary<string, string>()
         {
@@ -37,6 +37,8 @@ namespace ChemModel.ViewModels
             Admins = new ObservableCollection<User>(ctx.Users.Include(x => x.Role).Where(x => x.Role!.Name == "admin").ToList());
            
             WeakReferenceMessenger.Default.Register<NewUserMessage>(this);
+            WeakReferenceMessenger.Default.Register<ChangeDbMEssage>(this);
+
         }
         [RelayCommand]
         private void AddUser()
@@ -113,6 +115,12 @@ namespace ChemModel.ViewModels
             }
         }
 
-      
+
+        public void Receive(ChangeDbMEssage message)
+        {
+            using Context ctx = new Context();
+            Researchers = new ObservableCollection<User>(ctx.Users.Include(x => x.Role).Where(x => x.Role!.Name == "user").ToList());
+            Admins = new ObservableCollection<User>(ctx.Users.Include(x => x.Role).Where(x => x.Role!.Name == "admin").ToList());
+        }
     }
 }

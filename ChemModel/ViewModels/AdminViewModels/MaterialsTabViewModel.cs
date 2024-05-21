@@ -20,7 +20,7 @@ using System.Windows;
 namespace ChemModel.ViewModels
 {
 
-    public partial class MaterialsTabViewModel : ObservableObject, IRecipient<MaterialMessage>, IRecipient<UserMessage>
+    public partial class MaterialsTabViewModel : ObservableObject, IRecipient<MaterialMessage>, IRecipient<UserMessage>, IRecipient<NewPropMessage>, IRecipient<ChangeDbMEssage>
     {
         private User? user;
         [ObservableProperty]
@@ -44,6 +44,10 @@ namespace ChemModel.ViewModels
             }
             WeakReferenceMessenger.Default.Register<MaterialMessage>(this);
             WeakReferenceMessenger.Default.Register<UserMessage>(this);
+            WeakReferenceMessenger.Default.Register<NewPropMessage>(this);
+            WeakReferenceMessenger.Default.Register<ChangeDbMEssage>(this);
+
+
         }
 
         private bool CanDeleteMat()
@@ -89,6 +93,16 @@ namespace ChemModel.ViewModels
             ctx.SaveChanges();
             MessageBox.Show("Сохранение прошло успешно", "Сохранение успешно", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        public void Receive(NewPropMessage message)
+        {
+            using Context ctx = new Context();
+            SelectedMat = Mats[0];
+            Properties = new ObservableCollection<MaterialPropertyBind>(ctx.MaterialPropertyBinds.Where(x => x.MaterialId == SelectedMat.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
+            MathProps = new ObservableCollection<MaterialEmpiricBind>(ctx.MaterialEmpiricBinds.Where(x => x.MaterialId == SelectedMat.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
+        }
+
+
         public void Receive(MaterialMessage message)
         {
             if (message.Value is null)
@@ -143,6 +157,18 @@ namespace ChemModel.ViewModels
         public void Receive(UserMessage message)
         {
             user = message.Value;
+        }
+
+        public void Receive(ChangeDbMEssage message)
+        {
+            using Context ctx = new Context();
+            Mats = new ObservableCollection<MatGrid>(ctx.Materials.Select(x => new MatGrid() { Id = x.Id, Name = x.Name }).ToList());
+            if (Mats.Any())
+            {
+                SelectedMat = Mats[0];
+                Properties = new ObservableCollection<MaterialPropertyBind>(ctx.MaterialPropertyBinds.Where(x => x.MaterialId == SelectedMat.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
+                MathProps = new ObservableCollection<MaterialEmpiricBind>(ctx.MaterialEmpiricBinds.Where(x => x.MaterialId == SelectedMat.Id).Include(x => x.Property).Include(x => x.Property.Units).ToList());
+            }
         }
     }
 }
